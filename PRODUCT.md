@@ -13,6 +13,8 @@
 - Provides an accessible switch-style format toggle.
 - Uses Tailwind CSS for layout, typography, and component styling.
 - Vite development and preview servers configured to bind to `0.0.0.0:8080`.
+- Produces a static production bundle in `dist/` with `npm run build`.
+- Documents bare self-hosting by serving the generated `dist/` files from any static file server.
 
 ## Architecture
 
@@ -24,10 +26,12 @@
 - `src/types/time.ts` contains the shared `TimeFormat` type.
 - `src/index.css` defines Tailwind and global base styles.
 - `e2e/` contains Playwright browser coverage for the user-facing clock flow.
+- `README.md` documents production build verification and static self-host deployment from `dist/`.
 
 ## Conventions
 
 - Use npm scripts: `dev`, `build`, `lint`, `format`, `format:check`, `test`, `test:e2e`, and `preview`.
+- Treat `dist/` as generated deploy output: verify it with `npm run build`, but do not commit it.
 - Unit and render tests use Vitest and Testing Library; browser tests use Playwright.
 - Keep display formatting pure and tested separately from React components.
 - Keep browser storage access guarded so unavailable storage falls back safely.
