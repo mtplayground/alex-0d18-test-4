@@ -11,6 +11,9 @@ target/
 node_modules/
 dist/
 dist-ssr/
+playwright-report/
+test-results/
+blob-report/
 *.local
 .gh_token
 .claude/
