@@ -1,0 +1,15 @@
+dist
+coverage
+node_modules
+package-lock.json
+
+.claude
+.gh_token
+.database_url
+.task_id
+.container_name
+.app_name
+.gh_user
+.github_token
+.pipeline-state.json
+.progress
