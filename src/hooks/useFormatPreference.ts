@@ -1,6 +1,8 @@
 import { useCallback, useState } from 'react'
 
-export type TimeFormat = '12' | '24'
+import type { TimeFormat } from '../types/time'
+
+export type { TimeFormat }
 
 export const DEFAULT_TIME_FORMAT: TimeFormat = '24'
 export const FORMAT_PREFERENCE_STORAGE_KEY = 'clock-format-preference'
