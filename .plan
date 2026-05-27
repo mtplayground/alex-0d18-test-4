@@ -1,18 +1,40 @@
-Architecture plan
+Architecture plan for issues #3-#12
 
-Issue #1 initializes a Vite + React + TypeScript single-page application.
+Current baseline:
+- Vite + React + TypeScript application using npm.
+- App currently contains starter content in src/App.tsx with styles split between src/index.css and src/App.css.
+- Existing scripts: dev, build, lint. Test scripts will be added by the relevant implementation issues.
 
 Module structure and file organization:
-- Root project files: package.json, package-lock.json, index.html, vite.config.ts, tsconfig.json, tsconfig.app.json, tsconfig.node.json, eslint.config.js, README.md, .env.example.
-- Source files under src/: main.tsx for React bootstrap, App.tsx for the initial application shell, index.css/App.css for baseline styling, and vite-env.d.ts for Vite type declarations.
-- Static files under public/ for assets served directly by Vite.
-- Keep shared application types in src/types/ once domain models exist; no shared domain types are needed for the bootstrap issue.
+- src/main.tsx: React bootstrap only.
+- src/App.tsx: application composition layer. By issue #11 it should own the selected time format state and compose the display and toggle components.
+- src/index.css: Tailwind entry point and global base styles after issue #3. Prefer one global stylesheet and remove starter CSS that no longer serves the clock UI.
+- src/App.css: remove or stop using once Tailwind/global styles replace the starter Vite layout.
+- src/hooks/useClock.ts: returns the current Date, updates once per second, and cleans up its interval.
+- src/hooks/useFormatPreference.ts: owns the persisted time format preference and exposes a small setter/toggle API.
+- src/lib/formatters.ts: pure formatting helpers, including formatTime(date, mode) and formatDate(date).
+- src/types/time.ts or src/types.ts: shared TimeFormat type, probably `type TimeFormat = '12' | '24'`. Keep this small and promote it only if multiple modules need it.
+- src/components/ClockDisplay.tsx: renders a large formatted time using useClock and formatTime.
+- src/components/DateDisplay.tsx: renders the formatted current date. It can receive a Date prop from App or consume useClock; prefer a prop if App already has a current Date, otherwise keep it self-contained with useClock.
+- src/components/FormatToggle.tsx: accessible button/switch for changing the stored 12h/24h preference.
+- tests/unit or colocated *.test.ts(x): unit and render tests for hooks, formatters, and the toggle once a test runner is introduced.
+- tests/e2e/clock.spec.ts: Playwright coverage for visible time, toggling the format, and persistence after reload.
 
-Dependencies between issues:
-- Issue #1 is the foundation for all later frontend work. Future issues should depend on the Vite React TypeScript scaffold, npm scripts, TypeScript configuration, and initial source tree created here.
+Issue dependencies:
+- #3 Tailwind/base styles and #4 ESLint/Prettier are foundation issues for consistent UI and code style.
+- #5 useClock and #6 useFormatPreference depend on the TypeScript/React baseline and should land before display/toggle components.
+- #7 formatters are pure utilities used by #8 ClockDisplay and #9 DateDisplay.
+- #8 ClockDisplay depends on #5 and #7.
+- #9 DateDisplay depends on #5 and #7.
+- #10 FormatToggle depends on #6.
+- #11 App composition depends on #8, #9, and #10, and should remove any remaining starter Vite UI.
+- #12 Playwright E2E depends on the composed app from #11 and the styled layout from #3.
 
 Key design decisions:
-- Use Vite's official React TypeScript template as the baseline to avoid custom build wiring.
-- Keep the initial app minimal and conventional so future feature work can evolve the structure naturally.
-- Use npm for dependency management unless the repository later establishes a different package manager.
-- Track source, configuration, README, and .env.example; ignore generated dependencies, build output, local credentials, and task runtime files.
+- Use `localStorage` only inside the preference hook and guard access for unavailable storage so tests and non-browser contexts do not throw.
+- Default the format preference to '24' and persist only valid values.
+- Keep Date formatting deterministic through Intl.DateTimeFormat options. Unit tests should check midnight, noon, and representative 12h/24h output.
+- Keep interval logic isolated in useClock with fake-timer tests to avoid time-sensitive component tests.
+- Prefer accessible native controls: FormatToggle should expose a stable accessible name and pressed/switch state so both render tests and Playwright can interact with it reliably.
+- Keep styling pragmatic: Tailwind utilities for layout and typography, with global CSS reserved for resets, theme variables, and body/root defaults.
+- Add dependencies in the issue that first needs them: Tailwind in #3, Prettier additions in #4, unit test tooling when hooks/utilities are implemented if not already present, and Playwright in #12.
