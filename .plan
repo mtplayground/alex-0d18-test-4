@@ -1,0 +1,18 @@
+Architecture plan
+
+Issue #1 initializes a Vite + React + TypeScript single-page application.
+
+Module structure and file organization:
+- Root project files: package.json, package-lock.json, index.html, vite.config.ts, tsconfig.json, tsconfig.app.json, tsconfig.node.json, eslint.config.js, README.md, .env.example.
+- Source files under src/: main.tsx for React bootstrap, App.tsx for the initial application shell, index.css/App.css for baseline styling, and vite-env.d.ts for Vite type declarations.
+- Static files under public/ for assets served directly by Vite.
+- Keep shared application types in src/types/ once domain models exist; no shared domain types are needed for the bootstrap issue.
+
+Dependencies between issues:
+- Issue #1 is the foundation for all later frontend work. Future issues should depend on the Vite React TypeScript scaffold, npm scripts, TypeScript configuration, and initial source tree created here.
+
+Key design decisions:
+- Use Vite's official React TypeScript template as the baseline to avoid custom build wiring.
+- Keep the initial app minimal and conventional so future feature work can evolve the structure naturally.
+- Use npm for dependency management unless the repository later establishes a different package manager.
+- Track source, configuration, README, and .env.example; ignore generated dependencies, build output, local credentials, and task runtime files.
