@@ -1,25 +1,29 @@
-Architecture plan for issue #26
+Architecture plan for issues #28-#31
 
 Current baseline:
 - Vite + React + TypeScript single-page clock app using npm.
-- Existing source is organized into React components, hooks, pure helpers, and shared types under `src/`.
-- Unit tests run with Vitest and jsdom; browser tests run with Playwright.
+- Existing weather data layer includes `src/lib/weatherApi.ts` for Open-Meteo calls and `src/hooks/useWeather.ts` for loading/error state plus 15-minute in-memory caching.
+- Unit tests use Vitest and Testing Library; browser tests use Playwright.
 
 Module structure and file organization:
-- Add `src/lib/weatherApi.ts` for Open-Meteo geocoding and forecast API calls.
-- Add `src/hooks/useWeather.ts` for hook state, request lifecycle, and 15-minute client-side cache behavior.
-- Add colocated tests such as `src/lib/weatherApi.test.ts` and `src/hooks/useWeather.test.ts` using mocked `fetch`.
-- Keep weather response/domain types either in `weatherApi.ts` if local to the feature or promote to `src/types/weather.ts` if shared by multiple modules later.
-- Do not change `App.tsx` unless a later issue asks to render weather data.
+- `src/hooks/useCityPreference.ts`: localStorage-backed city preference hook with default city `"London"` and guarded storage reads/writes.
+- `src/components/WeatherPanel.tsx`: weather display and city-change form. It should consume weather data and callbacks through props or call the existing weather hook if the issue scope chooses a self-contained component.
+- `src/App.tsx`: integration point for city preference and WeatherPanel placement below the date display.
+- `src/lib/weatherApi.ts`: continue to own Open-Meteo request details and weather data shape.
+- `src/hooks/useWeather.ts`: continue to own weather fetch lifecycle and cache behavior.
+- `e2e/clock.spec.ts` or a new `e2e/weather.spec.ts`: Playwright coverage for visible weather, changing city, and mocked Open-Meteo responses.
+- Tests should remain colocated with hooks/components unless Playwright coverage belongs under `e2e/`.
 
 Dependencies between issues:
-- Issue #26 has no dependencies.
-- It should be implemented as a pure data layer feature that can be consumed by future UI issues.
+- #28 city preference hook is independent and should land before UI integration.
+- #29 WeatherPanel depends on the existing weather API/hook and #28 city preference behavior if it needs persisted city changes.
+- #30 App integration depends on #28 and #29.
+- #31 E2E weather coverage depends on #30 so the full user workflow exists.
 
 Key design decisions:
-- Use Open-Meteo's public geocoding API to resolve a city name before calling the forecast API.
-- Return temperature, feels-like temperature, humidity, weather condition code, and loading/error states from `useWeather`.
-- Treat empty city input and missing geocoding results as explicit error states rather than silently fetching invalid coordinates.
-- Cache successful city lookups for 15 minutes in module-local memory to reduce duplicate API traffic during a browser session.
-- Keep the hook resilient to unmounts and city changes by ignoring stale responses.
-- Avoid adding persistence or a backend database; this feature only needs transient client-side API caching.
+- Persist only the selected city in browser `localStorage`; do not add backend persistence or a database.
+- Default city preference to `"London"` and ignore invalid blank values.
+- Keep Open-Meteo network calls mocked in unit and E2E tests to avoid flaky external dependencies.
+- Keep WeatherPanel accessible: labelled city input, clear submit button, useful loading/error states, and meaningful text for weather condition icons.
+- Preserve the existing clock-first layout while adding weather below the date display; keep narrow layouts stacked and wide layouts balanced.
+- Keep deployment assumptions unchanged: static Vite build, preview/dev server on `0.0.0.0:8080`, generated `dist/` ignored.
