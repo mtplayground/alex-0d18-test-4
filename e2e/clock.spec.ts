@@ -6,6 +6,39 @@ const twentyFourHourTimePattern = /^\d{2}:\d{2}:\d{2}$/
 test('toggles the clock format and persists it after reload', async ({
   page,
 }) => {
+  await page.route(
+    'https://geocoding-api.open-meteo.com/v1/search**',
+    async (route) => {
+      await route.fulfill({
+        json: {
+          results: [
+            {
+              name: 'London',
+              latitude: 51.5072,
+              longitude: -0.1276,
+              country: 'United Kingdom',
+            },
+          ],
+        },
+      })
+    },
+  )
+  await page.route(
+    'https://api.open-meteo.com/v1/forecast**',
+    async (route) => {
+      await route.fulfill({
+        json: {
+          current: {
+            temperature_2m: 17,
+            apparent_temperature: 16,
+            relative_humidity_2m: 71,
+            weather_code: 2,
+          },
+        },
+      })
+    },
+  )
+
   await page.goto('/')
 
   const clock = page.getByLabel('Current time')
